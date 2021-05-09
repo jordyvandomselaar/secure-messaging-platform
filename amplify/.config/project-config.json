@@ -1,0 +1,17 @@
+{
+  "projectName": "securemessagingplatf",
+  "version": "3.1",
+  "frontend": "javascript",
+  "javascript": {
+    "framework": "react-native",
+    "config": {
+      "SourceDir": ".",
+      "DistributionDir": "web-build",
+      "BuildCommand": "expo build:web",
+      "StartCommand": "expo start --web"
+    }
+  },
+  "providers": [
+    "awscloudformation"
+  ]
+}

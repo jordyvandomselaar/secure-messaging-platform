@@ -1,6 +1,14 @@
-import {StatusBar} from 'expo-status-bar';
-import React from 'react';
-import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {ScrollView, Text, View} from 'react-native';
+import Amplify, {API, graphqlOperation} from 'aws-amplify'
+import awsconfig from './aws-exports'
+import {v4 as uuidV4} from "uuid";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CryptoJS from "crypto-js";
+import {randomBytes} from "crypto"
+
+Amplify.configure(awsconfig)
+
 import {
     Appbar,
     Button,
@@ -10,6 +18,8 @@ import {
     Surface,
     TextInput, Title
 } from "react-native-paper"
+import {createMessage} from "./src/graphql/mutations";
+import {Message} from "./src/API";
 
 const theme = {
     ...DefaultTheme,
@@ -23,10 +33,11 @@ const theme = {
 };
 
 export default function App() {
+    const {messages, addMessage} = useSavedMessages();
+
     return (
         <PaperProvider theme={theme}>
-            <StatusBar style="auto"/>
-            <View style={{flex: 1}}>
+            <ScrollView style={{flex: 1}}>
                 <AppBar/>
                 <View style={{flex: 1, alignItems: 'center'}}>
                     <View style={{flexDirection: 'row', marginTop: 20, width: '80%', flexWrap: "wrap"}}>
@@ -36,17 +47,17 @@ export default function App() {
                         <View style={{alignItems: "center", flex: 1, paddingLeft: 10, minWidth: 300}}>
                             <View style={{width: '100%'}}>
                                 <Surface>
-                                    <NewSecureMessage/>
+                                    <NewSecureMessage onSubmit={addMessage}/>
                                 </Surface>
                             </View>
                         </View>
                     </View>
                     <Title style={{marginTop: 20}}>Previously sent messages on this device</Title>
                     <Surface style={{marginTop: 20, width: '80%'}}>
-                        <SecureMessagesTable/>
+                        <SecureMessagesTable messages={messages}/>
                     </Surface>
                 </View>
-            </View>
+            </ScrollView>
         </PaperProvider>
     );
 }
@@ -59,41 +70,42 @@ function AppBar() {
     )
 }
 
-function SecureMessagesTable() {
+interface SecureMessagesTableProps {
+    messages: Message[]
+}
+
+function SecureMessagesTable({messages}: SecureMessagesTableProps) {
     return (
         <DataTable>
-            <DataTable.Row>
-                <DataTable.Cell>Frozen yogurt</DataTable.Cell>
-                <DataTable.Cell numeric>159</DataTable.Cell>
-                <DataTable.Cell numeric>6.0</DataTable.Cell>
-            </DataTable.Row>
-
-            <DataTable.Row>
-                <DataTable.Cell>Ice cream sandwich</DataTable.Cell>
-                <DataTable.Cell numeric>237</DataTable.Cell>
-                <DataTable.Cell numeric>8.0</DataTable.Cell>
-            </DataTable.Row>
+            {messages.map(message => (
+                <DataTable.Row>
+                    <DataTable.Cell>{message.uuid}</DataTable.Cell>
+                </DataTable.Row>
+            ))}
         </DataTable>
     )
 }
 
-function NewSecureMessage() {
+interface NewSecureMessageProps {
+    onSubmit(message: string): void
+}
+function NewSecureMessage({onSubmit}: NewSecureMessageProps) {
+    const [message, setMessage] = useState('');
+
     return (
         <View style={{padding: 20, alignItems: 'flex-end'}}>
             <TextInput
                 label="Your Message"
-                onChangeText={console.log}
                 multiline
                 numberOfLines={10}
                 style={{width: '100%'}}
+                value={message}
+                onChangeText={setMessage}
             />
-            <TextInput
-                label="Enter your e-mail if you'd like to be notified if your message has been opened"
-                onChangeText={console.log}
-                style={{width: '100%', marginTop: 20}}
-                textContentType={"emailAddress"}
-            />
-            <Button mode="contained" style={{marginTop: 20, width: 200}}>
+            <Button mode="contained" style={{marginTop: 20, width: 200}} onPress={() => {
+                onSubmit(message)
+                setMessage("");
+            }}>
                 Encrypt Message
             </Button>
         </View>
@@ -111,4 +123,48 @@ function Hero() {
             </Text>
         </View>
     )
+}
+
+function useSavedMessages () {
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    useEffect(() => {
+        AsyncStorage.getItem('savedMessages').then(savedMessagesInStorage => {
+            if(savedMessagesInStorage) {
+                setMessages(JSON.parse(savedMessagesInStorage));
+            }
+        })
+    }, [])
+
+    const addMessage = async (message: string) => {
+        const uuid = uuidV4();
+        const password = randomBytes(20).toString('hex');
+
+        const savedMessagesInStorage = await AsyncStorage.getItem('savedMessages');
+        const savedMessages = savedMessagesInStorage ? JSON.parse(savedMessagesInStorage) : [];
+
+        await API.graphql(graphqlOperation(createMessage, {
+            input: {
+                uuid,
+                message: CryptoJS.AES.encrypt(message, password).toString(),
+            }
+        }));
+
+        const newMessages: Message[] = [
+            ...savedMessages,
+            {
+                message,
+                uuid
+            }
+        ]
+
+        await AsyncStorage.setItem("savedMessages", JSON.stringify(newMessages));
+
+        setMessages(newMessages);
+    }
+
+    return useMemo(() => ({
+        messages,
+        addMessage
+    }), [messages, addMessage]);
 }
