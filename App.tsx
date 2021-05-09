@@ -1,14 +1,11 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {ScrollView, Text, View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import Amplify, {API, graphqlOperation} from 'aws-amplify'
 import awsconfig from './aws-exports'
 import {v4 as uuidV4} from "uuid";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from "crypto-js";
 import {randomBytes} from "crypto"
-
-Amplify.configure(awsconfig)
-
 import {
     Appbar,
     Button,
@@ -16,10 +13,13 @@ import {
     DefaultTheme, Headline,
     Provider as PaperProvider,
     Surface,
-    TextInput, Title
+    TextInput, Title,
+    Text
 } from "react-native-paper"
 import {createMessage} from "./src/graphql/mutations";
 import {Message} from "./src/API";
+
+Amplify.configure(awsconfig)
 
 const theme = {
     ...DefaultTheme,
@@ -33,7 +33,7 @@ const theme = {
 };
 
 export default function App() {
-    const {messages, addMessage} = useSavedMessages();
+    const {messages} = useSavedMessages();
 
     return (
         <PaperProvider theme={theme}>
@@ -47,7 +47,7 @@ export default function App() {
                         <View style={{alignItems: "center", flex: 1, paddingLeft: 10, minWidth: 300}}>
                             <View style={{width: '100%'}}>
                                 <Surface>
-                                    <NewSecureMessage onSubmit={addMessage}/>
+                                    <NewSecureMessage/>
                                 </Surface>
                             </View>
                         </View>
@@ -89,8 +89,27 @@ function SecureMessagesTable({messages}: SecureMessagesTableProps) {
 interface NewSecureMessageProps {
     onSubmit(message: string): void
 }
+
 function NewSecureMessage({onSubmit}: NewSecureMessageProps) {
+    const {addMessage} = useSavedMessages();
     const [message, setMessage] = useState('');
+    const [lastSavedMessage, setLastSavedMessage] = useState<{
+        url: string;
+        password: string;
+    }>();
+
+    const saveNewMessage = async () => {
+        const password = createPassword();
+
+        await addMessage(message, password);
+
+        setLastSavedMessage({
+            url: "https://google.com",
+            password
+        });
+
+        setMessage("");
+    }
 
     return (
         <View style={{padding: 20, alignItems: 'flex-end'}}>
@@ -102,12 +121,16 @@ function NewSecureMessage({onSubmit}: NewSecureMessageProps) {
                 value={message}
                 onChangeText={setMessage}
             />
-            <Button mode="contained" style={{marginTop: 20, width: 200}} onPress={() => {
-                onSubmit(message)
-                setMessage("");
-            }}>
+            <Button mode="contained" style={{marginTop: 20, width: 200}} onPress={saveNewMessage}>
                 Encrypt Message
             </Button>
+            {lastSavedMessage && (
+                <View style={{marginTop: 20}}>
+                    <Text>Your message was created successfully.</Text>
+                    <Text>Link: {lastSavedMessage.url}</Text>
+                    <Text>Password: {lastSavedMessage.password}</Text>
+                </View>
+            )}
         </View>
     );
 }
@@ -125,20 +148,19 @@ function Hero() {
     )
 }
 
-function useSavedMessages () {
+function useSavedMessages() {
     const [messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
         AsyncStorage.getItem('savedMessages').then(savedMessagesInStorage => {
-            if(savedMessagesInStorage) {
+            if (savedMessagesInStorage) {
                 setMessages(JSON.parse(savedMessagesInStorage));
             }
         })
     }, [])
 
-    const addMessage = async (message: string) => {
+    const addMessage = async (message: string, password: string) => {
         const uuid = uuidV4();
-        const password = randomBytes(20).toString('hex');
 
         const savedMessagesInStorage = await AsyncStorage.getItem('savedMessages');
         const savedMessages = savedMessagesInStorage ? JSON.parse(savedMessagesInStorage) : [];
@@ -167,4 +189,8 @@ function useSavedMessages () {
         messages,
         addMessage
     }), [messages, addMessage]);
+}
+
+function createPassword() {
+    return randomBytes(32).toString('hex');
 }
