@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useMemo, useState} from 'react';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, View, ViewProps} from 'react-native';
 import Amplify, {API, graphqlOperation} from 'aws-amplify'
 import awsconfig from './aws-exports'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +18,10 @@ import {createMessage} from "./src/graphql/mutations";
 import {CreateMessageMutation, GetMessageQuery, Message} from "./src/API";
 import * as Linking from 'expo-linking';
 import {getMessage} from "./src/graphql/queries";
+// @ts-ignore
 import crypto from 'expo-standard-web-crypto';
+import '@expo/match-media';
+import { useMediaQuery } from "react-responsive";
 
 Amplify.configure(awsconfig)
 
@@ -33,7 +36,12 @@ const theme = {
     },
 };
 
-const SavedMessagesContext = React.createContext<undefined|ReturnType<typeof initializeSavedMessages>>(undefined);
+const breakpoints = {
+    mobile: 624
+}
+
+// @ts-ignore
+const SavedMessagesContext = React.createContext<ReturnType<typeof initializeSavedMessages>>();
 
 export default function App() {
     const [messageDetail, setMessageDetail] = useState<Message>();
@@ -91,26 +99,27 @@ function MessageScreen ({message}: MessageScreenProps) {
     }
 
     return (
-        <View style={{width: '80%', marginTop: 20}}>
+        <Page>
             <Headline>Decrypt a message</Headline>
             <TextInput label="Enter your key" value={password} onChangeText={setPassword}/>
             <Button mode={"contained"} style={{width: 200}} onPress={decryptMessage}>Decrypt</Button>
             <Text style={{marginTop: 20}}>{decryptedMessage}</Text>
-        </View>
+        </Page>
     )
 }
 
 function HomeScreen() {
     const savedMessages = initializeSavedMessages();
+    const isPhone = useIsPhone();
 
     return (
        <SavedMessagesContext.Provider value={savedMessages}>
-           <View style={{width: '80%', marginTop: 20}}>
-               <View style={{flexDirection: 'row', flexWrap: "wrap"}}>
-                   <View style={{flex: 1, paddingRight: 10, minWidth: 200}}>
+           <Page>
+               <View style={{flexDirection: isPhone ? 'column' : 'row'}}>
+                   <View style={{flex: 1, paddingRight: isPhone ? 0 : 10, minWidth: 200}}>
                        <Hero/>
                    </View>
-                   <View style={{alignItems: "center", flex: 1, paddingLeft: 10, minWidth: 300}}>
+                   <View style={{alignItems: "center", flex: 1, paddingLeft: isPhone ? 0 : 10, minWidth: 300, marginTop: 20}}>
                        <View style={{width: '100%'}}>
                            <Surface>
                                <NewSecureMessage/>
@@ -122,7 +131,7 @@ function HomeScreen() {
                <Surface style={{marginTop: 20}}>
                    <SecureMessagesTable messages={savedMessages.messages.reverse()}/>
                </Surface>
-           </View>
+           </Page>
        </SavedMessagesContext.Provider>
     )
 }
@@ -162,6 +171,8 @@ function NewSecureMessage() {
     }>();
 
     const saveNewMessage = async () => {
+        if(!message) return;
+
         const password = createPassword();
 
         const result = await addMessage(message, password);
@@ -211,7 +222,7 @@ function Hero() {
                 Send an encrypted message.
             </Headline>
             <Text>
-                Using our tool, you can send any message safe and secure.
+                Need to send a message that you don't want to put out in the open? Encrypt it here. Fast and Secure.
             </Text>
         </View>
     )
@@ -283,4 +294,14 @@ function randomString(length: number): string {
     }
 
     return result;
+}
+
+function useIsPhone() {
+    return useMediaQuery({maxWidth: breakpoints.mobile});
+}
+
+function Page (props: ViewProps & {children: React.ReactNode}) {
+    const isPhone = useIsPhone();
+
+    return <View  style={{width: '100%', marginTop: 20, paddingHorizontal: isPhone ? 5 : 50, maxWidth: 1200}} {...props}/>
 }
