@@ -102,7 +102,7 @@ function MessageScreen ({message}: MessageScreenProps) {
         <Page>
             <Headline>Decrypt a message</Headline>
             <TextInput label="Enter your key" value={password} onChangeText={setPassword}/>
-            <Button mode={"contained"} style={{width: 200}} onPress={decryptMessage}>Decrypt</Button>
+            <Button mode={"contained"} style={{width: 200, marginTop: 20}} onPress={decryptMessage}>Decrypt</Button>
             <Text style={{marginTop: 20}}>{decryptedMessage}</Text>
         </Page>
     )
