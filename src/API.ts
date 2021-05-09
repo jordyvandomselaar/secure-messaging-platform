@@ -4,12 +4,10 @@
 
 export type CreateMessageInput = {
   id?: string | null,
-  uuid: string,
   message: string,
 };
 
 export type ModelMessageConditionInput = {
-  uuid?: ModelStringInput | null,
   message?: ModelStringInput | null,
   and?: Array< ModelMessageConditionInput | null > | null,
   or?: Array< ModelMessageConditionInput | null > | null,
@@ -59,7 +57,6 @@ export type ModelSizeInput = {
 export type Message = {
   __typename: "Message",
   id?: string,
-  uuid?: string,
   message?: string,
   createdAt?: string,
   updatedAt?: string,
@@ -67,7 +64,6 @@ export type Message = {
 
 export type UpdateMessageInput = {
   id: string,
-  uuid?: string | null,
   message?: string | null,
 };
 
@@ -77,7 +73,6 @@ export type DeleteMessageInput = {
 
 export type ModelMessageFilterInput = {
   id?: ModelIDInput | null,
-  uuid?: ModelStringInput | null,
   message?: ModelStringInput | null,
   and?: Array< ModelMessageFilterInput | null > | null,
   or?: Array< ModelMessageFilterInput | null > | null,
@@ -115,7 +110,6 @@ export type CreateMessageMutation = {
   createMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -131,7 +125,6 @@ export type UpdateMessageMutation = {
   updateMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -147,7 +140,6 @@ export type DeleteMessageMutation = {
   deleteMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -162,7 +154,6 @@ export type GetMessageQuery = {
   getMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -181,7 +172,6 @@ export type ListMessagesQuery = {
     items?:  Array< {
       __typename: "Message",
       id: string,
-      uuid: string,
       message: string,
       createdAt: string,
       updatedAt: string,
@@ -194,7 +184,6 @@ export type OnCreateMessageSubscription = {
   onCreateMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -205,7 +194,6 @@ export type OnUpdateMessageSubscription = {
   onUpdateMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,
@@ -216,7 +204,6 @@ export type OnDeleteMessageSubscription = {
   onDeleteMessage?:  {
     __typename: "Message",
     id: string,
-    uuid: string,
     message: string,
     createdAt: string,
     updatedAt: string,

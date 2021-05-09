@@ -1,5 +1,4 @@
 type Message @model {
   id: ID!
-  uuid: String!
   message: String!
 }

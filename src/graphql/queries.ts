@@ -6,7 +6,6 @@ export const getMessage = /* GraphQL */ `
   query GetMessage($id: ID!) {
     getMessage(id: $id) {
       id
-      uuid
       message
       createdAt
       updatedAt
@@ -22,7 +21,6 @@ export const listMessages = /* GraphQL */ `
     listMessages(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        uuid
         message
         createdAt
         updatedAt
