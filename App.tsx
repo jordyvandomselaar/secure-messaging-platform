@@ -191,7 +191,7 @@ function HomeScreen() {
                     </View>
                 </View>
                 <Headline style={{marginTop: 100}}>Previously sent messages on this device</Headline>
-                <View style={{paddingTop: 30}}>
+                <View style={{paddingTop: 20}}>
                     <Pane>
                         <SecureMessagesTable messages={savedMessages.messages.reverse()}/>
                     </Pane>
