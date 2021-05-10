@@ -21,19 +21,44 @@ import {getMessage} from "./src/graphql/queries";
 // @ts-ignore
 import crypto from 'expo-standard-web-crypto';
 import '@expo/match-media';
-import { useMediaQuery } from "react-responsive";
+import {useMediaQuery} from "react-responsive";
+import {LinearGradient} from "expo-linear-gradient";
+import {BlurView} from "expo-blur";
+import {
+    useFonts,
+    Inter_100Thin,
+    Inter_300Light,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_900Black
+} from '@expo-google-fonts/inter';
 
 Amplify.configure(awsconfig)
 
 const theme = {
     ...DefaultTheme,
-    roundness: 2,
+    roundness: 5,
     colors: {
         ...DefaultTheme.colors,
-        primary: '#3498db',
+        primary: '#4448ff',
         accent: '#f1c40f',
-        background: '#ffffff'
+        background: '#ffffff',
+        text: '#ffffff'
     },
+    fonts: {
+        regular: {
+            fontFamily: "Inter_400Regular"
+        },
+        medium: {
+            fontFamily: "Inter_500Medium"
+        },
+        light: {
+            fontFamily: "Inter_300Light"
+        },
+        thin: {
+            fontFamily: "Inter_100Thin"
+        },
+    }
 };
 
 const breakpoints = {
@@ -44,6 +69,13 @@ const breakpoints = {
 const SavedMessagesContext = React.createContext<ReturnType<typeof initializeSavedMessages>>();
 
 export default function App() {
+    useFonts({
+        Inter_100Thin,
+        Inter_300Light,
+        Inter_400Regular,
+        Inter_500Medium,
+        Inter_900Black
+    });
     const [messageDetail, setMessageDetail] = useState<Message>();
 
     useEffect(() => {
@@ -59,7 +91,7 @@ export default function App() {
             })) as Promise<{ data: GetMessageQuery }>).then(response => {
                 const message = response.data.getMessage;
 
-                if(!message) {
+                if (!message) {
                     return;
                 }
 
@@ -70,12 +102,14 @@ export default function App() {
 
     return (
         <PaperProvider theme={theme}>
-            <ScrollView style={{flex: 1}}>
-                <AppBar/>
-                <View style={{flex: 1, alignItems: 'center'}}>
-                    {messageDetail ? <MessageScreen message={messageDetail}/> : <HomeScreen/>}
-                </View>
-            </ScrollView>
+            <LinearGradient colors={['#7579ff', '#b224ef']} style={{flex: 1}}>
+                <ScrollView style={{flex: 1}}>
+                    <AppBar/>
+                    <View style={{flex: 1, alignItems: 'center'}}>
+                        {messageDetail ? <MessageScreen message={messageDetail}/> : <HomeScreen/>}
+                    </View>
+                </ScrollView>
+            </LinearGradient>
         </PaperProvider>
     );
 }
@@ -84,26 +118,47 @@ interface MessageScreenProps {
     message: Message
 }
 
-function MessageScreen ({message}: MessageScreenProps) {
+function MessageScreen({message}: MessageScreenProps) {
     const [password, setPassword] = useState('');
     const [decryptedMessage, setDecryptedMessage] = useState<string>();
 
     const decryptMessage = () => {
-        if(!message.message) return;
+        if (!message.message) return;
 
         const result = CryptoJS.AES.decrypt(message.message, password).toString(CryptoJS.enc.Utf8);
 
-        if(result) {
+        if (result) {
             setDecryptedMessage(result);
         }
     }
 
     return (
         <Page>
-            <Headline>Decrypt a message</Headline>
-            <TextInput label="Enter your key" value={password} onChangeText={setPassword}/>
-            <Button mode={"contained"} style={{width: 200, marginTop: 20}} onPress={decryptMessage}>Decrypt</Button>
-            <Text style={{marginTop: 20}}>{decryptedMessage}</Text>
+            <Headline style={{fontSize: 50, fontFamily: "Inter_900Black"}}>
+                Decrypt your message
+            </Headline>
+            <View style={{paddingTop: 30}}>
+                <Pane>
+                    <View>
+                        <TextInput label="Enter your key" value={password} onChangeText={setPassword}
+                                   style={{backgroundColor: 'transparent'}}/>
+                        <Button mode={"contained"} style={{width: 200, marginTop: 30}}
+                                onPress={decryptMessage}>Decrypt</Button>
+                    </View>
+                </Pane>
+            </View>
+            {decryptedMessage && (
+                <View style={{paddingTop: 30}}>
+                    <Headline>
+                        Your message
+                    </Headline>
+                    <View style={{paddingTop: 30}}>
+                        <Pane>
+                            <Text>{decryptedMessage}</Text>
+                        </Pane>
+                    </View>
+                </View>
+            )}
         </Page>
     )
 }
@@ -113,26 +168,34 @@ function HomeScreen() {
     const isPhone = useIsPhone();
 
     return (
-       <SavedMessagesContext.Provider value={savedMessages}>
-           <Page>
-               <View style={{flexDirection: isPhone ? 'column' : 'row'}}>
-                   <View style={{flex: 1, paddingRight: isPhone ? 0 : 10, minWidth: 200}}>
-                       <Hero/>
-                   </View>
-                   <View style={{alignItems: "center", flex: 1, paddingLeft: isPhone ? 0 : 10, minWidth: 300, marginTop: 20}}>
-                       <View style={{width: '100%'}}>
-                           <Surface>
-                               <NewSecureMessage/>
-                           </Surface>
-                       </View>
-                   </View>
-               </View>
-               <Title style={{marginTop: 20}}>Previously sent messages on this device</Title>
-               <Surface style={{marginTop: 20}}>
-                   <SecureMessagesTable messages={savedMessages.messages.reverse()}/>
-               </Surface>
-           </Page>
-       </SavedMessagesContext.Provider>
+        <SavedMessagesContext.Provider value={savedMessages}>
+            <Page>
+                <View style={{flexDirection: isPhone ? 'column' : 'row'}}>
+                    <View style={{flex: 1, paddingRight: isPhone ? 0 : 10, minWidth: 200}}>
+                        <Hero/>
+                    </View>
+                    <View style={{
+                        alignItems: "center",
+                        flex: 1,
+                        paddingLeft: isPhone ? 0 : 10,
+                        minWidth: 300,
+                        marginTop: 30
+                    }}>
+                        <View style={{width: '100%'}}>
+                            <Pane>
+                                <NewSecureMessage/>
+                            </Pane>
+                        </View>
+                    </View>
+                </View>
+                <Headline style={{marginTop: 100}}>Previously sent messages on this device</Headline>
+                <View style={{paddingTop: 30}}>
+                    <Pane>
+                        <SecureMessagesTable messages={savedMessages.messages.reverse()}/>
+                    </Pane>
+                </View>
+            </Page>
+        </SavedMessagesContext.Provider>
     )
 }
 
@@ -140,10 +203,11 @@ function AppBar() {
     const homeUrl = Linking.createURL('/');
 
     return (
-        <Appbar style={{backgroundColor: '#FFF'}}>
-            <Appbar.Content onPress={() => Linking.openURL(homeUrl)} title="Secure Messaging Platform" titleStyle={{textAlign: 'center'}}/>
-        </Appbar>
-    )
+        <View style={{paddingTop: 50}}>
+            <Text style={{fontSize: 40, textAlign: "center"}} onPress={() => Linking.openURL(homeUrl)}>Secure Messaging
+                Platform</Text>
+        </View>
+    );
 }
 
 interface SecureMessagesTableProps {
@@ -171,13 +235,13 @@ function NewSecureMessage() {
     }>();
 
     const saveNewMessage = async () => {
-        if(!message) return;
+        if (!message) return;
 
         const password = createPassword();
 
         const result = await addMessage(message, password);
 
-        if(!result) return;
+        if (!result) return;
 
         setLastSavedMessage({
             url: Linking.createURL('/', {
@@ -191,38 +255,52 @@ function NewSecureMessage() {
         setMessage("");
     }
 
+    if(lastSavedMessage) {
+        return (
+            <View>
+                <Title>Your message was created successfully.</Title>
+                <Text style={{paddingTop: 20}}>Unique link</Text>
+                <TextInput
+                    style={{width: '100%', backgroundColor: 'transparent'}}
+                    value={lastSavedMessage.url}
+                    mode={"outlined"}
+                />
+                <Text style={{paddingTop: 20}}>Secret password</Text>
+                <TextInput
+                    style={{width: '100%', backgroundColor: 'transparent'}}
+                    value={lastSavedMessage.password}
+                    mode={"outlined"}
+                />
+            </View>
+        )
+    }
+
     return (
-        <View style={{padding: 20, alignItems: 'flex-end'}}>
+        <View style={{padding: 10}}>
             <TextInput
                 label="Your Message"
                 multiline
                 numberOfLines={10}
-                style={{width: '100%'}}
+                style={{width: '100%', backgroundColor: 'transparent'}}
                 value={message}
                 onChangeText={setMessage}
             />
-            <Button mode="contained" style={{marginTop: 20, width: 200}} onPress={saveNewMessage}>
+            <Button mode="contained" style={{marginTop: 30, width: 200}} onPress={saveNewMessage}>
                 Encrypt Message
             </Button>
-            {lastSavedMessage && (
-                <View style={{marginTop: 20}}>
-                    <Text>Your message was created successfully.</Text>
-                    <Text style={{color: 'skyblue'}} onPress={() => Linking.openURL(lastSavedMessage.url)}>Link: {lastSavedMessage.url}</Text>
-                    <Text>Password: {lastSavedMessage.password}</Text>
-                </View>
-            )}
         </View>
     );
 }
 
 function Hero() {
     return (
-        <View>
-            <Headline>
-                Send an encrypted message.
+        <View style={{paddingTop: 50}}>
+            <Headline style={{fontSize: 50, fontFamily: "Inter_900Black"}}>
+                Send an encrypted message
             </Headline>
-            <Text>
-                Need to send a message that you don't want to put out in the open? Encrypt it here. Fast and Secure.
+            <Text style={{paddingTop: 30, fontSize: 20, fontWeight: "100"}}>
+                Send any message safe and secure. Because your message is encrypted on your device, your private data
+                can only be read by the intended recipient.
             </Text>
         </View>
     )
@@ -247,10 +325,10 @@ function initializeSavedMessages() {
             input: {
                 message: CryptoJS.AES.encrypt(message, password).toString(),
             }
-        })) as {data: CreateMessageMutation};
+        })) as { data: CreateMessageMutation };
 
         const result = response.data.createMessage;
-        if(!result) return;
+        if (!result) return;
 
         const newMessages: Message[] = [
             ...savedMessages,
@@ -278,14 +356,14 @@ function useSavedMessages() {
 }
 
 function createPassword() {
-   return randomString(32);
+    return randomString(32);
 }
 
 // https://stackblitz.com/edit/random-string
 function randomString(length: number): string {
     const charset = "ABCDEFabcdef0123456789";
     const values = new Uint32Array(length);
-    crypto.getRandomValues(values);
+    (crypto as Crypto).getRandomValues(values);
 
     let i;
     let result = "";
@@ -300,8 +378,29 @@ function useIsPhone() {
     return useMediaQuery({maxWidth: breakpoints.mobile});
 }
 
-function Page (props: ViewProps & {children: React.ReactNode}) {
+function Page(props: ViewProps & { children: React.ReactNode }) {
     const isPhone = useIsPhone();
 
-    return <View  style={{width: '100%', marginTop: 20, paddingHorizontal: isPhone ? 5 : 50, maxWidth: 1200}} {...props}/>
+    return <View
+        style={{
+            width: '100%',
+            marginTop: 80,
+            paddingHorizontal: isPhone ? 5 : 50,
+            paddingLeft: "10%",
+            paddingRight: "10%"
+        }} {...props}/>
+}
+
+interface PageProps {
+    children: React.ReactNode
+}
+
+function Pane({children}: PageProps) {
+    return (
+        <BlurView intensity={50}>
+            <Surface style={{backgroundColor: 'rgba(255,255,255,.3)', padding: 10}}>
+                {children}
+            </Surface>
+        </BlurView>
+    )
 }
