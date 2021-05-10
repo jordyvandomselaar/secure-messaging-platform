@@ -69,7 +69,7 @@ const breakpoints = {
 const SavedMessagesContext = React.createContext<ReturnType<typeof initializeSavedMessages>>();
 
 export default function App() {
-    useFonts({
+    const [doneLoadingFonts] = useFonts({
         Inter_100Thin,
         Inter_300Light,
         Inter_400Regular,
@@ -99,6 +99,8 @@ export default function App() {
             })
         })
     })
+
+    if(!doneLoadingFonts) return null;
 
     return (
         <PaperProvider theme={theme}>
@@ -293,8 +295,10 @@ function NewSecureMessage() {
 }
 
 function Hero() {
+    const isPhone = useIsPhone();
+
     return (
-        <View style={{paddingTop: 50}}>
+        <View style={{paddingTop: isPhone ? 0 : 50}}>
             <Headline style={{fontSize: 50, fontFamily: "Inter_900Black"}}>
                 Send an encrypted message
             </Headline>
@@ -384,10 +388,10 @@ function Page(props: ViewProps & { children: React.ReactNode }) {
     return <View
         style={{
             width: '100%',
-            marginTop: 80,
+            marginTop: isPhone ? 50 : 80,
             paddingHorizontal: isPhone ? 5 : 50,
-            paddingLeft: "10%",
-            paddingRight: "10%"
+            paddingLeft: isPhone ? 10 : "10%",
+            paddingRight: isPhone ? 10 : "10%"
         }} {...props}/>
 }
 
