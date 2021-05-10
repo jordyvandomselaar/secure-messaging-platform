@@ -136,7 +136,7 @@ function MessageScreen({message}: MessageScreenProps) {
 
     return (
         <Page>
-            <Headline style={{fontSize: 50, fontFamily: "Inter_900Black"}}>
+            <Headline style={{fontSize: 50, fontFamily: "Inter_900Black", lineHeight: 45}}>
                 Decrypt your message
             </Headline>
             <View style={{paddingTop: 30}}>
@@ -190,7 +190,7 @@ function HomeScreen() {
                         </View>
                     </View>
                 </View>
-                <Headline style={{marginTop: 100}}>Previously sent messages on this device</Headline>
+                <Headline style={{marginTop: isPhone ? 50 : 100}}>Previously sent messages on this device</Headline>
                 <View style={{paddingTop: 20}}>
                     <Pane>
                         <SecureMessagesTable messages={savedMessages.messages.reverse()}/>
