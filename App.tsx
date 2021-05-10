@@ -299,10 +299,10 @@ function Hero() {
 
     return (
         <View style={{paddingTop: isPhone ? 0 : 50}}>
-            <Headline style={{fontSize: 50, fontFamily: "Inter_900Black"}}>
+            <Headline style={{fontSize: 50, fontFamily: "Inter_900Black", lineHeight: 45}}>
                 Send an encrypted message
             </Headline>
-            <Text style={{paddingTop: 30, fontSize: 20, fontWeight: "100"}}>
+            <Text style={{paddingTop: 20, fontSize: 20, fontWeight: "100"}}>
                 Send any message safe and secure. Because your message is encrypted on your device, your private data
                 can only be read by the intended recipient.
             </Text>
