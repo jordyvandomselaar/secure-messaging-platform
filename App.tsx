@@ -154,7 +154,7 @@ function MessageScreen({message}: MessageScreenProps) {
                     <Headline>
                         Your message
                     </Headline>
-                    <View style={{paddingTop: 30}}>
+                    <View style={{paddingTop: 10}}>
                         <Pane>
                             <Text>{decryptedMessage}</Text>
                         </Pane>
