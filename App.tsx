@@ -1,11 +1,10 @@
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {ScrollView, View, ViewProps} from 'react-native';
-import Amplify, {API, graphqlOperation} from 'aws-amplify'
+import Amplify, {API, graphqlOperation, Analytics} from 'aws-amplify'
 import awsconfig from './aws-exports'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from "crypto-js";
 import {
-    Appbar,
     Button,
     DataTable,
     DefaultTheme, Headline,
@@ -85,6 +84,13 @@ export default function App() {
             const id = Linking.parse(url).queryParams.id;
 
             if (!id) return;
+
+            Analytics.record({
+                name: "viewMessage",
+                attributes: {
+                    id
+                }
+            });
 
             (API.graphql(graphqlOperation(getMessage, {
                 id
@@ -324,6 +330,10 @@ function initializeSavedMessages() {
     const addMessage = async (message: string, password: string) => {
         const savedMessagesInStorage = await AsyncStorage.getItem('savedMessages');
         const savedMessages = savedMessagesInStorage ? JSON.parse(savedMessagesInStorage) : [];
+
+        Analytics.record({
+            name: "createNewMessage"
+        });
 
         const response = await API.graphql(graphqlOperation(createMessage, {
             input: {

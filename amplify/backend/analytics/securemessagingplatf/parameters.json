@@ -1,0 +1,21 @@
+{
+    "appName": "securemessagingplatf",
+    "roleName": "pinpointLambdaRole0e59d8df",
+    "cloudformationPolicyName": "cloudformationPolicy0e59d8df",
+    "cloudWatchPolicyName": "cloudWatchPolicy0e59d8df",
+    "pinpointPolicyName": "pinpointPolicy0e59d8df",
+    "authPolicyName": "pinpoint_amplify_0e59d8df",
+    "unauthPolicyName": "pinpoint_amplify_0e59d8df",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}

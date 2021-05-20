@@ -23,5 +23,18 @@
       "type": "cicd",
       "lastPushTimeStamp": "2021-05-09T20:27:38.536Z"
     }
+  },
+  "auth": {
+    "cognito87d15e57": {
+      "service": "Cognito",
+      "serviceType": "managed",
+      "providerPlugin": "awscloudformation"
+    }
+  },
+  "analytics": {
+    "securemessagingplatf": {
+      "service": "Pinpoint",
+      "providerPlugin": "awscloudformation"
+    }
   }
 }
