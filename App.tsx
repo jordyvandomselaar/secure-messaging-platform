@@ -104,7 +104,7 @@ export default function App() {
                 setMessageDetail(message);
             })
         })
-    })
+    }, []);
 
     if(!doneLoadingFonts) return null;
 
