@@ -31,6 +31,7 @@ import {
     Inter_500Medium,
     Inter_900Black
 } from '@expo-google-fonts/inter';
+import {StatusBar} from "expo-status-bar";
 
 Amplify.configure(awsconfig)
 
@@ -110,14 +111,17 @@ export default function App() {
 
     return (
         <PaperProvider theme={theme}>
-            <LinearGradient colors={['#7579ff', '#b224ef']} style={{flex: 1}}>
-                <ScrollView style={{flex: 1}}>
-                    <AppBar/>
-                    <View style={{flex: 1, alignItems: 'center'}}>
-                        {messageDetail ? <MessageScreen message={messageDetail}/> : <HomeScreen/>}
-                    </View>
-                </ScrollView>
-            </LinearGradient>
+            <>
+                <StatusBar style={"auto"}/>
+                <LinearGradient colors={['#7579ff', '#b224ef']} style={{flex: 1, paddingTop: 500}}>
+                    <ScrollView style={{flex: 1}}>
+                          <AppBar/>
+                          <View style={{flex: 1, alignItems: 'center'}}>
+                              {messageDetail ? <MessageScreen message={messageDetail}/> : <HomeScreen/>}
+                          </View>
+                    </ScrollView>
+                </LinearGradient>
+            </>
         </PaperProvider>
     );
 }
@@ -196,12 +200,6 @@ function HomeScreen() {
                         </View>
                     </View>
                 </View>
-                <Headline style={{marginTop: isPhone ? 50 : 100}}>Previously sent messages on this device</Headline>
-                <View style={{paddingTop: 20}}>
-                    <Pane>
-                        <SecureMessagesTable messages={savedMessages.messages.reverse()}/>
-                    </Pane>
-                </View>
             </Page>
         </SavedMessagesContext.Provider>
     )
@@ -211,27 +209,11 @@ function AppBar() {
     const homeUrl = Linking.createURL('/');
 
     return (
-        <View style={{paddingTop: 50}}>
+        <View>
             <Text style={{fontSize: 40, textAlign: "center"}} onPress={() => Linking.openURL(homeUrl)}>Secure Messaging
                 Platform</Text>
         </View>
     );
-}
-
-interface SecureMessagesTableProps {
-    messages: Message[]
-}
-
-function SecureMessagesTable({messages}: SecureMessagesTableProps) {
-    return (
-        <DataTable>
-            {messages.map(message => (
-                <DataTable.Row key={message.id}>
-                    <DataTable.Cell>{message.id}</DataTable.Cell>
-                </DataTable.Row>
-            ))}
-        </DataTable>
-    )
 }
 
 function NewSecureMessage() {
